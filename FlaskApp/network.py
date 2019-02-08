@@ -39,14 +39,14 @@ class Network:
 
         self.train = val[:split]
         self.test = val[split:]
-        self.train_generator = TimeseriesGenerator(self.train, self.train, length=3, batch_size=8)
+        self.train_generator = TimeseriesGenerator(self.train, self.train, length=3, batch_size=5)
         self.test_generator = TimeseriesGenerator(self.test, self.test, length=3, batch_size=1)
         print("INFO: Dataset Generated.")
 
     def _create_model(self):
         self.model = Sequential()
         self.model.add(
-            LSTM(3,
+            LSTM(5,
                 activation='relu',
                 input_shape=(3,1), return_sequences=False)
         )
@@ -62,7 +62,7 @@ class Network:
         self.message = ""
 
     def train_model(self):
-        num_epochs = 10
+        num_epochs = 15
         self.model.fit_generator(self.train_generator, epochs=num_epochs)
         print("INFO: Model trained for {} epochs".format(num_epochs))
 
@@ -80,10 +80,10 @@ class Network:
                     x = self.date_test,
                     y = self.static_predict,
                     mode = 'lines',
-                    name = 'Static Forecast'
+                    name = 'Traditional Forecast'
                 )
         layout = go.Layout(
-            title = "Static Forecasting Model",
+            title = "Traditional Forecasting Model",
             xaxis = {'title':'Date'},
             yaxis = {'title':'Sales'}
         )
@@ -125,18 +125,26 @@ class Network:
             x = self.date_test,
             y = dynamic_predict,
             mode = 'lines',
-            name = 'Dynamic Forecast'
+            name = 'Prophet Forecast'
         )
         trace3 = go.Scatter(
             x = self.date_test,
             y = self.static_predict,
             mode = 'lines',
-            name = 'Static Forecast'
+            name = 'Traditional Forecast'
         )
         layout = go.Layout(
-            title = 'Dynamic Forecasting Model',
+            title = 'Prophet Forecasting Model',
             xaxis = {'title':'Date'},
-            yaxis = {'title':'Sales'}
+            yaxis = {'title':'Sales'},
+            annotations = [dict(
+                x = pd.to_datetime(x),
+                y = y,
+                xref = x,
+                yref = y,
+                text = 'target',
+                showarrow=True
+            )]
         )
         fig = go.Figure(data=[trace1, trace2, trace3], layout=layout)
         return plot(fig, output_type='div')

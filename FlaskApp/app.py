@@ -37,7 +37,7 @@ def hello():
         
     elif request.form['submit'] == 'update':
         px = request.form['px']
-        py = request.form['py'] 
+        py = request.form['py']
         x = str(px)
 
         new_plot = net.retrain_model(x, py)
