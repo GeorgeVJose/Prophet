@@ -46,7 +46,7 @@ class Network:
     def _create_model(self):
         self.model = Sequential()
         self.model.add(
-            LSTM(5,
+            LSTM(4,
                 activation='relu',
                 input_shape=(3,1), return_sequences=False)
         )
@@ -104,13 +104,13 @@ class Network:
         y = self.model.predict(val)[0][0]
         return y.astype('int64')
     
-    def retrain_model(self, x, y):
+    def retrain_model(self, date_str, y):
 #     x : Date for model retraining
 #     y : Corresponding new value
-        x = self.get_vals_for_day(x)
+        x = self.get_vals_for_day(date_str)
         x = x.values.reshape((1,3,1))
         y = np.array(y).reshape(1)
-        self.model.fit(x, y, epochs=5, verbose=0)
+        self.model.fit(x, y, epochs=15, verbose=0)
 
 # Regenerate Plot
         dynamic_predict = self.model.predict_generator(self.test_generator).reshape((-1)).astype('int64') 
@@ -138,13 +138,30 @@ class Network:
             xaxis = {'title':'Date'},
             yaxis = {'title':'Sales'},
             annotations = [dict(
-                x = pd.to_datetime(x),
+                x = pd.to_datetime(date_str, yearfirst=True),
                 y = y,
-                xref = x,
-                yref = y,
-                text = 'target',
-                showarrow=True
-            )]
+                xref = 'x',
+                yref = 'y',
+                text = 'Target',
+                showarrow=True,
+                font=dict(
+                    family='Courier New, monospace',
+                    size=16,
+                    color='#ffffff'
+                ),
+                align='center',
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+                arrowcolor='#636363',
+                ax=20,
+                ay=-30,
+                bordercolor='#c7c7c7',
+                borderwidth=2,
+                borderpad=4,
+                bgcolor='#ff7f0e',
+                opacity=0.8                
+                )]
         )
         fig = go.Figure(data=[trace1, trace2, trace3], layout=layout)
         return plot(fig, output_type='div')

@@ -28,6 +28,10 @@ def prediction_render():
 def updation_render():
     return render_template('updation.html')
 
+@app.route('/profile.html')
+def profile_render():
+    return render_template('profile.html')
+
 @app.route('/hello', methods=['POST'])
 def hello():
     if request.form['submit'] == 'predict':
@@ -45,4 +49,4 @@ def hello():
         return render_template('updation.html', include_plotlyjs=False,  updated_plot=Markup(new_plot))
 
 if __name__ == '__main__':
-    app.run() 
+    app.run(debug=True) 
