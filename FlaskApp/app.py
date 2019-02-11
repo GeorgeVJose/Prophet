@@ -49,4 +49,4 @@ def hello():
         return render_template('updation.html', include_plotlyjs=False,  updated_plot=Markup(new_plot))
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(debug=False) 

@@ -17,16 +17,17 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 class Network:
     def _load_n_preprocess(self):
-        filename = "female-birth.csv"
+        filename = "sales_final.csv"
         self.df = pd.read_csv(filename)
-        self.df = self.df[:-1]
+        # self.df = self.df[:-1]
 
         self.df['Date'] = pd.to_datetime(self.df['Date'])
-        self.df.rename(columns={"Daily total female births in California, 1959":"Birth"}, inplace=True)
+        # time_diff = pd.Timedelta(days=18263)
+        # self.df['Date'] += time_diff
         print("\nINFO: Preprocessing Complete.")
 
     def _create_generator(self):
-        val = self.df['Birth'].values
+        val = self.df['Sales'].values
         val = val.reshape((-1,1))
 
         split = int(0.8*len(val))
@@ -34,8 +35,8 @@ class Network:
         self.date_train =self. df['Date'][:split]
         self.date_test = self.df['Date'][split:]
 
-        self.birth_train = self.df['Birth'].values[:split]
-        self.birth_test = self.df['Birth'].values[split:]
+        self.sales_train = self.df['Sales'].values[:split]
+        self.sales_test = self.df['Sales'].values[split:]
 
         self.train = val[:split]
         self.test = val[split:]
@@ -67,12 +68,12 @@ class Network:
         print("INFO: Model trained for {} epochs".format(num_epochs))
 
     def generate_init_plot(self):
-        self.static_predict = self.model.predict_generator(self.test_generator).reshape((-1)).astype('int64')
+        self.static_predict = self.model.predict_generator(self.test_generator).reshape((-1))
         print(self.static_predict)
         
         trace1 = go.Scatter(
                     x = self.date_train,
-                    y = self.birth_train,
+                    y = self.sales_train,
                     mode = 'lines',
                     name = 'Data'
                 )
@@ -85,7 +86,7 @@ class Network:
         layout = go.Layout(
             title = "Traditional Forecasting Model",
             xaxis = {'title':'Date'},
-            yaxis = {'title':'Sales'}
+            yaxis = {'title':'Sales (Million Dollars)'}
         )
         fig = go.Figure(data=[trace1, trace2], layout=layout)
         return plot(fig, output_type='div')
@@ -93,31 +94,32 @@ class Network:
     def get_vals_for_day(self, x):
         x = pd.to_datetime(x, yearfirst=True)
         x_3 = pd.date_range(end=x, periods=4)[:-1]
-        val = self.df.loc[self.df['Date'].isin(x_3), 'Birth']
+        val = self.df.loc[self.df['Date'].isin(x_3), 'Sales']
         return val
 
     def predict(self, x):
     #     x is given date. So (x-2,x-1,x) needs to be found
-        print(x)
         val = self.get_vals_for_day(x)
         val = val.values.reshape((1,3,1))
         y = self.model.predict(val)[0][0]
-        return y.astype('int64')
+        return y
     
     def retrain_model(self, date_str, y):
 #     x : Date for model retraining
 #     y : Corresponding new value
+        print("Input Date: ",date_str)
         x = self.get_vals_for_day(date_str)
+        print("Dates : ", x)
         x = x.values.reshape((1,3,1))
         y = np.array(y).reshape(1)
         self.model.fit(x, y, epochs=15, verbose=0)
 
 # Regenerate Plot
-        dynamic_predict = self.model.predict_generator(self.test_generator).reshape((-1)).astype('int64') 
+        dynamic_predict = self.model.predict_generator(self.test_generator).reshape((-1)) 
 
         trace1 = go.Scatter(
                     x = self.date_train,
-                    y = self.birth_train,
+                    y = self.sales_train,
                     mode = 'lines',
                     name = 'Data'
                 )
@@ -136,7 +138,7 @@ class Network:
         layout = go.Layout(
             title = 'Prophet Forecasting Model',
             xaxis = {'title':'Date'},
-            yaxis = {'title':'Sales'},
+            yaxis = {'title':'Sales (Million Dollars)'},
             annotations = [dict(
                 x = pd.to_datetime(date_str, yearfirst=True),
                 y = y,
@@ -149,10 +151,10 @@ class Network:
                     size=16,
                     color='#ffffff'
                 ),
-                align='center',
-                arrowhead=2,
-                arrowsize=1,
-                arrowwidth=2,
+                # align='center',
+                arrowhead=4,
+                arrowsize=2,
+                arrowwidth=4,
                 arrowcolor='#636363',
                 ax=20,
                 ay=-30,
