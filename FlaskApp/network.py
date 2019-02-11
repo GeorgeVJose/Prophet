@@ -104,14 +104,14 @@ class Network:
         y = self.model.predict(val)[0][0]
         return y
     
-    def retrain_model(self, date_str, y):
+    def retrain_model(self, date_str, inp_y):
 #     x : Date for model retraining
 #     y : Corresponding new value
         print("Input Date: ",date_str)
         x = self.get_vals_for_day(date_str)
         print("Dates : ", x)
         x = x.values.reshape((1,3,1))
-        y = np.array(y).reshape(1)
+        y = np.array(inp_y).reshape(1)
         self.model.fit(x, y, epochs=15, verbose=0)
 
 # Regenerate Plot
@@ -141,7 +141,7 @@ class Network:
             yaxis = {'title':'Sales (Million Dollars)'},
             annotations = [dict(
                 x = pd.to_datetime(date_str, yearfirst=True),
-                y = y,
+                y = inp_y,
                 xref = 'x',
                 yref = 'y',
                 text = 'Target',
@@ -151,13 +151,13 @@ class Network:
                     size=16,
                     color='#ffffff'
                 ),
-                # align='center',
-                arrowhead=4,
-                arrowsize=2,
-                arrowwidth=4,
+                align='center',
+                arrowhead=5,
+                arrowsize=1,
+                arrowwidth=2,
                 arrowcolor='#636363',
-                ax=20,
-                ay=-30,
+                ax=-0,
+                ay=-70,
                 bordercolor='#c7c7c7',
                 borderwidth=2,
                 borderpad=4,
